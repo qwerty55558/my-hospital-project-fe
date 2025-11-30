@@ -4,10 +4,22 @@
     @apply w-full pointer-events-none;
 
     & video{
-        @apply w-full h-auto;
+        @apply w-full max-h-[100vh] object-cover;
     }
 }
 
-.floatArrow{
-    @apply flex justify-center items-center w-[50px] h-[50px] bg-white rounded-full fixed bottom-10 right-10 cursor-pointer;
+.floatArrow {
+    @apply flex justify-center items-center relative h-0 top-[-2.5rem];
+
+    & span {
+        @apply animate-bounce;
+    }
+}
+
+.contentContainer{
+    @apply flex flex-col justify-center;
+
+    & > div{
+        @apply w-[100%] text-center mx-auto h-[33vh];
+    }
 }

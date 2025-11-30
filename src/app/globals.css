@@ -3,3 +3,36 @@
 html, body {
     @apply bg-indigo-50 text-gray-900;
 }
+
+
+.primary-bg-1{
+    background-color: #0F0529;
+}
+.primary-bg-2{
+    background-color: #4A2574;
+}
+.primary-bg-3{
+    background-color: #7338A0;
+}
+.primary-bg-4{
+    background-color: #924DBF;
+}
+.primary-bg-5{
+    background-color: #9E72C3;
+}
+
+.primary-text-1{
+    color: #0F0529;
+}
+.primary-text-2{
+    color: #4A2574;
+}
+.primary-text-3{
+    color: #7338A0;
+}
+.primary-text-4{
+    color: #924DBF;
+}
+.primary-text-5{
+    color: #9E72C3;
+}

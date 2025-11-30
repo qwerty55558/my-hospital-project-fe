@@ -11,11 +11,10 @@ export default function Header() {
             <div className={style.navContainer}>
                 <img src="/img/logo.png" alt="logo" />
                 <div>
-                    환영합니다!
                 </div>
                 <div>
-                    <FontAwesomeIcon icon={faMagnifyingGlass} className="text-gray-500 cursor-pointer" />
-                    <FontAwesomeIcon icon={faUser} className="w-6 h-6 ml-2 cursor-pointer" />
+                    <FontAwesomeIcon icon={faMagnifyingGlass} className="primary-text-1 cursor-pointer text-2xl md:text-3xl" />
+                    <FontAwesomeIcon icon={faUser} className="primary-text-1 w-6 h-6 ml-2 cursor-pointer text-2xl md:text-3xl" />
                 </div>
             </div>
         </>
