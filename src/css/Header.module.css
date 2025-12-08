@@ -1,7 +1,7 @@
 @reference '../app/globals.css';
 
 .navContainer{
-    @apply flex justify-between items-center p-4 bg-white/30 backdrop-blur-xs shadow-sm fixed top-0 left-0 right-0 select-none;
+    @apply flex justify-between items-center p-4 bg-white/30 backdrop-blur-xs shadow-sm fixed top-0 left-0 right-0 select-none z-100;
     & img{
         @apply w-[40px] cursor-pointer;
     }
