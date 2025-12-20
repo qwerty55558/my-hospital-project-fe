@@ -1,38 +1,44 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+
 @import "tailwindcss";
 
 html, body {
-    @apply bg-indigo-50 text-gray-900;
+    @apply bg-white text-[#333D4B];
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    font-feature-settings: "cv11";
+    scroll-behavior: smooth;
 }
 
-
+/* Socar Inspired Vibrant Gradients */
 .primary-bg-1{
-    background-color: #0F0529;
+    background: linear-gradient(135deg, #38C6F4 0%, #007AFF 100%); /* Bright Sky to Blue */
 }
 .primary-bg-2{
-    background-color: #4A2574;
+    background: linear-gradient(135deg, #00D2D3 0%, #2E86DE 100%); /* Teal to Deep Blue */
 }
 .primary-bg-3{
-    background-color: #7338A0;
+    background: linear-gradient(135deg, #54A0FF 0%, #006266 100%); /* Soft Blue to Greenish Deep */
 }
 .primary-bg-4{
-    background-color: #924DBF;
+    background: linear-gradient(135deg, #48DBFB 0%, #5F27CD 100%); /* Cyan to Purple (Point) */
 }
 .primary-bg-5{
-    background-color: #9E72C3;
+    background-color: #F5F7F9; /* Clean Gray Background */
 }
 
+/* Text Colors */
 .primary-text-1{
-    color: #0F0529;
+    color: #1C1C1E; /* Almost Black */
 }
 .primary-text-2{
-    color: #4A2574;
+    color: #333D4B; /* Dark Gray */
 }
 .primary-text-3{
-    color: #7338A0;
+    color: #00B8FF; /* Socar Blue (Point) */
 }
 .primary-text-4{
-    color: #924DBF;
+    color: #8B95A1; /* Light Gray */
 }
 .primary-text-5{
-    color: #9E72C3;
+    color: #FFFFFF; /* White */
 }
