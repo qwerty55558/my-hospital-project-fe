@@ -13,7 +13,7 @@ export default function Footer() {
 
     const footerLinks = [
         { name: "이용약관", path: "/terms" },
-        { name: "개인정보 처리방침", path: "/privacy", bold: true },
+        { name: "개인정보 처리방침", path: "/privacy" },
         { name: "위치정보 이용약관", path: "/location-terms" },
         { name: "환자의 권리와 의무", path: "/patient-rights" },
         { name: "비급여 진료비 안내", path: "/fees" },

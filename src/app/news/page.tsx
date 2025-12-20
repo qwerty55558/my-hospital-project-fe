@@ -1,6 +1,6 @@
 export default function Page() {
     return (
-        <div className="pt-32 pb-20 px-6 max-w-4xl mx-auto min-h-screen">
+        <div className="pt-48 pb-20 px-6 max-w-4xl mx-auto min-h-screen">
             <h1 className="text-4xl md:text-5xl font-bold mb-12 text-[#191F28]">병원 소식</h1>
             <div className="space-y-6">
                 {[1, 2, 3].map((i) => (

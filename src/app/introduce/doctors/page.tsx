@@ -45,7 +45,7 @@ const DOCTORS = [
 
 export default function DoctorsPage() {
     return (
-        <div className="pt-32 pb-24 bg-white min-h-screen">
+        <div className="pt-48 pb-24 bg-white min-h-screen">
             <div className="max-w-7xl mx-auto px-6">
                 {/* Header Section */}
                 <div className="mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">

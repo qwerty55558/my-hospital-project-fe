@@ -1,8 +1,7 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface NavMenuProps {
     isOpen: boolean;
@@ -21,57 +20,66 @@ export default function NavMenu({ isOpen, onClose }: NavMenuProps) {
     ];
 
     return (
-        <div
-            className={`fixed inset-0 z-[200] flex justify-end transition-opacity duration-300 ${
-                isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-            }`}
-        >
-            {/* Backdrop (Darkened background) */}
-            <div 
-                className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
-                    isOpen ? "opacity-100" : "opacity-0"
-                }`} 
-                onClick={onClose}
-            />
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[200] flex justify-end">
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        onClick={onClose}
+                    />
 
-            {/* Menu Container (Slide from right) */}
-            <div
-                className={`relative w-full md:w-[400px] h-full bg-white/95 shadow-2xl flex flex-col items-center justify-center transform transition-transform duration-500 ease-out ${
-                    isOpen ? "translate-x-0" : "translate-x-full"
-                }`}
-            >
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 text-[#191F28]/70 hover:text-[#00B8FF] transition-all duration-300 hover:rotate-90"
-                    aria-label="Close menu"
-                >
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="stroke-current">
-                        <path d="M18 6L6 18M6 6L18 18" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                </button>
-
-                {/* Navigation Links */}
-                <nav className="flex flex-col space-y-8 text-center">
-                    {menuItems.map((item, index) => (
-                        <Link
-                            key={index}
-                            href={item.path}
+                    {/* Menu Container */}
+                    <motion.div
+                        initial={{ x: "100%" }}
+                        animate={{ x: 0 }}
+                        exit={{ x: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="relative w-full md:w-[400px] h-full bg-white/95 shadow-2xl flex flex-col items-center justify-center p-12"
+                    >
+                        {/* Close Button */}
+                        <motion.button
+                            whileHover={{ rotate: 90 }}
                             onClick={onClose}
-                            className="group relative text-2xl md:text-4xl font-bold text-[#191F28] transition-all duration-300 hover:text-[#00B8FF]"
+                            className="absolute top-6 right-6 text-[#191F28]/70 hover:text-[#00B8FF] transition-colors"
+                            aria-label="Close menu"
                         >
-                            <span className="relative z-10">{item.name}</span>
-                            {/* Hover Underline Effect */}
-                            <span className="absolute left-1/2 bottom-[-8px] w-full h-1 bg-[#00B8FF] transition-transform duration-300 origin-center scale-x-0 -translate-x-1/2 group-hover:scale-x-100"></span>
-                        </Link>
-                    ))}
-                </nav>
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="stroke-current">
+                                <path d="M18 6L6 18M6 6L18 18" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </motion.button>
 
-                {/* Optional Decorative Element */}
-                <div className="absolute bottom-10 text-[#8B95A1] text-sm">
-                    My Hospital Project
+                        {/* Navigation Links */}
+                        <nav className="flex flex-col space-y-6 text-center w-full">
+                            {menuItems.map((item, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.1 + index * 0.05 }}
+                                >
+                                    <Link
+                                        href={item.path}
+                                        onClick={onClose}
+                                        className="group relative inline-block text-2xl md:text-3xl font-bold text-[#191F28] transition-all duration-300 hover:text-[#00B8FF]"
+                                    >
+                                        <span className="relative z-10">{item.name}</span>
+                                        <span className="absolute left-1/2 bottom-[-4px] w-full h-1 bg-[#00B8FF] transition-transform duration-300 origin-center scale-x-0 -translate-x-1/2 group-hover:scale-x-100"></span>
+                                    </Link>
+                                </motion.div>
+                            ))}
+                        </nav>
+
+                        {/* Optional Decorative Element */}
+                        <div className="absolute bottom-10 text-[#8B95A1] text-xs font-medium tracking-widest uppercase">
+                            Premium Medical Care
+                        </div>
+                    </motion.div>
                 </div>
-            </div>
-        </div>
+            )}
+        </AnimatePresence>
     );
 }

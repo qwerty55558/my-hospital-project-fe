@@ -1,6 +1,6 @@
 export default function Page() {
     return (
-        <div className="pt-32 pb-20 px-6 max-w-4xl mx-auto min-h-screen">
+        <div className="pt-48 pb-20 px-6 max-w-4xl mx-auto min-h-screen">
             <h1 className="text-4xl md:text-5xl font-bold mb-12 text-[#191F28]">진료 안내</h1>
             <div className="bg-[#F5F7F9] p-8 rounded-2xl mb-12">
                 <h2 className="text-2xl font-bold mb-6 text-[#191F28]">진료 시간</h2>

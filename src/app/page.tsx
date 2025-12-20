@@ -4,7 +4,8 @@ import style from "@/css/Index.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowDown, faArrowUp, faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image'
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 function ScrollToTop() {
     const [isVisible, setIsVisible] = useState(false);
@@ -30,15 +31,22 @@ function ScrollToTop() {
     };
 
     return (
-        <button
-            onClick={scrollToTop}
-            className={`fixed bottom-10 right-10 z-[150] w-14 h-14 bg-white/80 backdrop-blur-md text-[#191F28] rounded-full shadow-xl flex items-center justify-center transition-all duration-300 border border-gray-100 hover:bg-white hover:scale-110 active:scale-95 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
-            }`}
-            aria-label="Scroll to top"
-        >
-            <FontAwesomeIcon icon={faArrowUp} className="text-xl" />
-        </button>
+        <AnimatePresence>
+            {isVisible && (
+                <motion.button
+                    initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={scrollToTop}
+                    className="fixed bottom-10 right-10 z-[150] w-14 h-14 bg-white/80 backdrop-blur-md text-[#191F28] rounded-full shadow-xl flex items-center justify-center border border-gray-100 cursor-pointer"
+                    aria-label="Scroll to top"
+                >
+                    <FontAwesomeIcon icon={faArrowUp} className="text-xl" />
+                </motion.button>
+            )}
+        </AnimatePresence>
     );
 }
 
@@ -82,27 +90,6 @@ const DOCTORS = [
 ];
 
 function DoctorCard({ doctor }: { doctor: any }) {
-    const ref = useRef<HTMLDivElement>(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.15 }
-        );
-
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
-
-        return () => observer.disconnect();
-    }, []);
-
     const renderLayout = () => {
         switch (doctor.layoutType) {
             case "center-focus":
@@ -174,16 +161,40 @@ function DoctorCard({ doctor }: { doctor: any }) {
     };
 
     return (
-        <div className={`relative ${doctor.bgClass} py-32 min-h-[80vh] flex items-center justify-center overflow-hidden`}>
+        <div id={`doctor-${doctor.name.split(' ')[0]}`} className={`relative ${doctor.bgClass} py-32 min-h-[80vh] flex items-center justify-center overflow-hidden`}>
             <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white/20 to-transparent pointer-events-none mix-blend-overlay" />
-            <div
-                ref={ref}
-                className={`w-full max-w-7xl mx-auto px-6 md:px-12 transform transition-all duration-1000 ease-out ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-24"}`}>
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full max-w-7xl mx-auto px-6 md:px-12 relative z-10"
+            >
                 {renderLayout()}
-            </div>
+            </motion.div>
             <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
         </div>
     )
+}
+
+function SmoothLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (href.startsWith("#")) {
+            e.preventDefault();
+            const id = href.substring(1);
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth" });
+                window.history.pushState(null, "", href);
+            }
+        }
+    };
+
+    return (
+        <a href={href} onClick={handleClick} className={className}>
+            {children}
+        </a>
+    );
 }
 
 export default function Home() {
@@ -194,18 +205,38 @@ export default function Home() {
                 <video autoPlay loop muted src={"/vid/mainVideo.mp4"}></video>
                 <div className="absolute inset-0 bg-black/20 z-0" />
                 <span className={`${style.floatCenterText} z-10 w-full px-6`}>
-                    <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out">
-                        <span className="text-[#00B8FF] text-sm md:text-lg font-bold tracking-[0.2em] mb-4 uppercase drop-shadow-sm">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                        className="flex flex-col items-center"
+                    >
+                        <motion.span
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2, duration: 0.8 }}
+                            className="text-[#00B8FF] text-sm md:text-lg font-bold tracking-[0.2em] mb-4 uppercase drop-shadow-sm"
+                        >
                             Premium Eye Care Service
-                        </span>
-                        <h1 className="text-white text-4xl md:text-7xl xl:text-8xl font-bold tracking-tight text-center leading-[1.1] drop-shadow-2xl">
-                            가장 선명한 순간,<br/>
+                        </motion.span>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4, duration: 0.8 }}
+                            className="text-white text-4xl md:text-7xl xl:text-8xl font-bold tracking-tight text-center leading-[1.1] drop-shadow-2xl"
+                        >
+                            가장 선명한 순간,<br />
                             <span className="font-light opacity-90">마이병원과 함께</span>
-                        </h1>
-                        <p className="mt-8 text-white/70 text-base md:text-xl font-medium tracking-wide text-center max-w-2xl drop-shadow-md">
-                            20년 전통의 노하우와 최첨단 장비로<br className="md:hidden"/> 당신의 소중한 눈을 지켜드립니다.
-                        </p>
-                    </div>
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.6, duration: 1 }}
+                            className="mt-8 text-white/70 text-base md:text-xl font-medium tracking-wide text-center max-w-2xl drop-shadow-md"
+                        >
+                            20년 전통의 노하우와 최첨단 장비로<br className="md:hidden" /> 당신의 소중한 눈을 지켜드립니다.
+                        </motion.p>
+                    </motion.div>
                 </span>
             </div>
             <div className={style.floatArrow}>
@@ -231,6 +262,126 @@ export default function Home() {
                     />
                 ))}
             </div>
+
+            {/* Major Services Section */}
+            <section className="py-32 bg-white">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-bold text-[#191F28] mb-4">주요 진료 과목</h2>
+                        <p className="text-lg text-[#4E5968]">분야별 전문의가 제안하는 맞춤형 안과 진료</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {[
+                            { title: "시력교정센터", desc: "스마일라식, 라섹, 안내렌즈삽입술", icon: "👁️", target: "#doctor-이시력" },
+                            { title: "노안·백내장", desc: "다초점 인공수정체 삽입술, 레이저 수술", icon: "👓", target: "#doctor-최망막" },
+                            { title: "망막·드림렌즈", desc: "황반변성, 당뇨망막병증, 영유아 검진", icon: "✨", target: "#doctor-박소아" },
+                        ].map((service, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 15 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.05, duration: 0.5 }}
+                                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                                className="group p-10 rounded-3xl bg-[#F9FAFB] border border-[#EEEEEE] hover:border-[#00B8FF] hover:bg-white transition-colors duration-300 cursor-pointer shadow-sm hover:shadow-xl"
+                            >
+                                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]">{service.icon}</div>
+                                <h3 className="text-2xl font-bold text-[#191F28] mb-3">{service.title}</h3>
+                                <p className="text-[#8B95A1] leading-relaxed">{service.desc}</p>
+                                <SmoothLink href={service.target} className="mt-8 text-[#00B8FF] font-bold inline-flex items-center">
+                                    자세히 보기 <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                                </SmoothLink>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Latest News Section */}
+            <section className="py-32 bg-[#F9FAFB]">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex justify-between items-end mb-16">
+                        <div>
+                            <h2 className="text-4xl font-bold text-[#191F28] mb-4">병원 소식</h2>
+                            <p className="text-lg text-[#4E5968]">마이병원의 새로운 소식을 전해드립니다.</p>
+                        </div>
+                        <button className="text-[#4E5968] font-medium border-b border-gray-400 hover:text-black">전체보기</button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[
+                            { date: "2025.12.20", title: "12월 성탄절 및 연말 진료 일정 안내", type: "공지" },
+                            { date: "2025.12.15", title: "최첨단 5세대 레이저 장비 '비쥬맥스 800' 도입", type: "뉴스" },
+                            { date: "2025.12.01", title: "겨울방학 맞이 드림렌즈 특별 이벤트", type: "이벤트" },
+                        ].map((post, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.05, duration: 0.2 }}
+                                whileHover={{ scale: 1.02, y: -3 }}
+                                className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-colors duration-300 cursor-pointer border border-transparent hover:border-[#EEEEEE]"
+                            >
+                                <span className="inline-block px-3 py-1 bg-blue-50 text-[#00B8FF] text-xs font-bold rounded-md mb-4">{post.type}</span>
+                                <h3 className="text-xl font-bold text-[#191F28] mb-8 line-clamp-2 h-14">{post.title}</h3>
+                                <p className="text-sm text-[#B0B8C1]">{post.date}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Location Section */}
+            <section className="py-32 bg-white">
+                <motion.div
+                    initial={{ opacity: 0, y: 25 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                    className="max-w-7xl mx-auto px-6"
+                >
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <h2 className="text-4xl font-bold text-[#191F28] mb-8">오시는 길</h2>
+                            <div className="space-y-6">
+                                <div className="flex items-start">
+                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mr-4 shrink-0">📍</div>
+                                    <div>
+                                        <h4 className="font-bold text-[#191F28] mb-1">위치</h4>
+                                        <p className="text-[#4E5968]">서울특별시 강남구 테헤란로 123, 4층 (강남역 12번 출구)</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start">
+                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mr-4 shrink-0">📞</div>
+                                    <div>
+                                        <h4 className="font-bold text-[#191F28] mb-1">전화</h4>
+                                        <p className="text-[#4E5968]">1588-1234</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start">
+                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mr-4 shrink-0">⏰</div>
+                                    <div>
+                                        <h4 className="font-bold text-[#191F28] mb-1">진료시간</h4>
+                                        <p className="text-[#4E5968]">평일 09:00 ~ 18:00 (점심시간 13:00 ~ 14:00)</p>
+                                        <p className="text-[#4E5968]">토요일 09:00 ~ 13:00 (일요일/공휴일 휴진)</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="mt-12 flex gap-4">
+                                <button className="px-8 py-4 bg-[#191F28] text-white rounded-xl font-bold hover:bg-black transition-colors cursor-pointer">네이버지도</button>
+                                <button className="px-8 py-4 bg-[#FEE500] text-[#191F28] rounded-xl font-bold hover:opacity-90 transition-opacity cursor-pointer">카카오맵</button>
+                            </div>
+                        </div>
+                        <div className="h-[400px] bg-gray-200 rounded-3xl overflow-hidden relative shadow-inner">
+                            {/* Placeholder for Map */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-[#8B95A1] p-10 text-center">
+                                <span className="text-6xl mb-4">🗺️</span>
+                                <p className="font-medium">지도가 표시되는 영역입니다.<br />실제 서비스에서는 지도를 로드합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            </section>
         </>
     );
 }
