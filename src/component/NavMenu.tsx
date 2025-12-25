@@ -12,6 +12,7 @@ export default function NavMenu({ isOpen, onClose }: NavMenuProps) {
     const menuItems = [
         { name: "홈", path: "/" },
         { name: "병원 소개", path: "/introduce" },
+        { name: "시설 안내", path: "/introduce/facility" },
         { name: "의료진 소개", path: "/introduce/doctors" },
         { name: "진료 안내", path: "/services" },
         { name: "이용 안내", path: "/information" },
