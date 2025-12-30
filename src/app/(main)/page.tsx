@@ -1,11 +1,13 @@
 "use client"
 
-// Removed Index.module.css import
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowDown, faArrowUp, faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
+import { faArrowDown, faArrowUp, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image'
-import { useEffect, useRef, useState } from "react";
+import Link from 'next/link'
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { fetchRepresentativeDoctors, Doctor } from "@/lib/api";
+import { DoctorSliderSkeleton, DoctorCardGridSkeleton } from "@/component/Skeleton";
 
 function ScrollToTop() {
     const [isVisible, setIsVisible] = useState(false);
@@ -50,131 +52,338 @@ function ScrollToTop() {
     );
 }
 
-const DOCTORS = [
-    {
-        name: "김명안 대표원장",
-        role: "Representative Director",
-        catchphrase: "20년의 노하우,\n빛을 선물합니다.",
-        description: "환자분의 눈을 제 눈처럼 생각하며 진료해왔습니다. 대학병원 교수 출신의 풍부한 임상 경험을 바탕으로, 가장 안전하고 정확한 최상의 의료 서비스를 약속드립니다.",
-        imageSrc: "/img/profile_doctor-1.jpg",
-        bgClass: "primary-bg-1",
-        layoutType: "center-focus"
+// 의사별 배경/텍스트 색상 설정
+const DOCTOR_COLORS: Record<string, { bg: string; accent: string; text: string; subtext: string }> = {
+    "primary-bg-1": {
+        bg: "linear-gradient(135deg, rgba(56, 198, 244, 0.08) 0%, rgba(0, 122, 255, 0.12) 100%)",
+        accent: "#007AFF",
+        text: "#191F28",
+        subtext: "#4E5968"
     },
-    {
-        name: "이시력 원장",
-        role: "Vision Correction Center",
-        catchphrase: "0.1mm의 오차도\n허용하지 않는 정밀함",
-        description: "스마일 라식, 라섹 등 시력 교정술은 정밀함이 생명입니다. 최신 장비와 끊임없는 연구로 당신에게 가장 선명한 세상을 찾아드리겠습니다.",
-        imageSrc: "/img/profile_doctor-3.jpg",
-        bgClass: "primary-bg-2",
-        layoutType: "asymmetric-left"
+    "primary-bg-2": {
+        bg: "linear-gradient(135deg, rgba(0, 210, 211, 0.08) 0%, rgba(46, 134, 222, 0.12) 100%)",
+        accent: "#00D2D3",
+        text: "#191F28",
+        subtext: "#4E5968"
     },
-    {
-        name: "박소아 원장",
-        role: "Pediatric Ophthalmology",
-        catchphrase: "우리 아이의 눈,\n평생 건강의 시작입니다",
-        description: "아이들의 눈은 어른과 다릅니다. 겁 많은 아이들도 웃으며 진료받을 수 있는 따뜻한 진료실. 엄마의 마음으로 꼼꼼하게 살피겠습니다.",
-        imageSrc: "/img/profile_doctor-4.jpg",
-        bgClass: "primary-bg-3",
-        layoutType: "soft-rounded"
+    "primary-bg-3": {
+        bg: "linear-gradient(135deg, rgba(84, 160, 255, 0.08) 0%, rgba(0, 98, 102, 0.12) 100%)",
+        accent: "#54A0FF",
+        text: "#191F28",
+        subtext: "#4E5968"
     },
-    {
-        name: "최망막 원장",
-        role: "Retina & Cataract Center",
-        catchphrase: "흐릿해진 시야를\n다시 맑고 투명하게",
-        description: "노안, 백내장은 누구나 겪게 되는 과정입니다. 불편함을 참지 마세요. 제2의 시력 인생을 위한 맞춤형 솔루션을 제시해 드립니다.",
-        imageSrc: "/img/profile_doctor-2.jpg",
-        bgClass: "primary-bg-4",
-        layoutType: "magazine-overlap"
+    "primary-bg-4": {
+        bg: "linear-gradient(135deg, rgba(72, 219, 251, 0.08) 0%, rgba(95, 39, 205, 0.12) 100%)",
+        accent: "#5F27CD",
+        text: "#191F28",
+        subtext: "#4E5968"
     },
-];
+};
 
-function DoctorCard({ doctor }: { doctor: any }) {
-    const renderLayout = () => {
-        switch (doctor.layoutType) {
-            case "center-focus":
-                return (
-                    <div className="flex flex-col items-center text-center">
-                        <span className="text-blue-100 font-semibold tracking-widest mb-4 uppercase">{doctor.role}</span>
-                        <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight whitespace-pre-line drop-shadow-lg">{doctor.catchphrase}</h2>
-                        <p className="max-w-2xl text-lg text-white/90 mb-12 leading-relaxed">{doctor.description}</p>
-                        <div className="relative w-full max-w-[600px] aspect-[4/5] shadow-2xl rounded-t-full overflow-hidden border-4 border-white/20">
-                            <Image src={doctor.imageSrc} alt={doctor.name} fill className="object-cover" />
-                            <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-6">
-                                <h3 className="text-2xl font-bold text-white">{doctor.name}</h3>
-                            </div>
-                        </div>
-                    </div>
-                );
-            case "asymmetric-left":
-                return (
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-10 w-full">
-                        <div className="flex-1 text-left">
-                            <div className="w-20 h-1 bg-white mb-8"></div>
-                            <h2 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight whitespace-pre-line tracking-tighter">{doctor.catchphrase}</h2>
-                            <h3 className="text-2xl font-bold text-blue-100 mb-4">{doctor.name} <span className="text-lg font-normal text-white/70">| {doctor.role}</span></h3>
-                            <p className="text-lg text-white/80 leading-relaxed max-w-md">{doctor.description}</p>
-                        </div>
-                        <div className="flex-1 relative w-full aspect-square md:aspect-[3/4] max-w-[500px]">
-                            <div className="absolute inset-0 border-[1px] border-white/30 translate-x-4 translate-y-4 rounded-xl"></div>
-                            <Image src={doctor.imageSrc} alt={doctor.name} fill className="object-cover rounded-xl shadow-2xl relative z-10" />
-                        </div>
-                    </div>
-                );
-            case "soft-rounded":
-                return (
-                    <div className="flex flex-col-reverse md:flex-row items-center gap-12 w-full">
-                        <div className="flex-1 relative w-full max-w-[450px] aspect-square">
-                            <Image src={doctor.imageSrc} alt={doctor.name} fill className="object-cover rounded-full border-8 border-white/10 shadow-xl" />
-                        </div>
-                        <div className="flex-1 text-center md:text-left">
-                            <FontAwesomeIcon icon={faQuoteLeft} className="text-4xl text-white/30 mb-6" />
-                            <h2 className="text-3xl md:text-5xl font-bold mb-6 leading-snug whitespace-pre-line">{doctor.catchphrase}</h2>
-                            <p className="text-xl text-white/90 leading-loose font-light">{doctor.description}</p>
-                            <div className="mt-8">
-                                <span className="block text-2xl font-bold">{doctor.name}</span>
-                                <span className="block text-sm text-white/70 uppercase tracking-widest mt-1">{doctor.role}</span>
-                            </div>
-                        </div>
-                    </div>
-                );
-            case "magazine-overlap":
-                return (
-                    <div className="relative w-full py-10">
-                        <div className="flex flex-col md:flex-row items-center">
-                            <div className="w-full md:w-2/3 relative aspect-video shadow-2xl overflow-hidden rounded-lg">
-                                <Image src={doctor.imageSrc} alt={doctor.name} fill className="object-cover opacity-90" />
-                                <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
-                            </div>
-                            <div className="w-full md:w-1/2 md:-ml-20 mt-[-50px] md:mt-0 relative z-10 bg-white/10 backdrop-blur-md p-8 md:p-12 border-l-4 border-white shadow-xl rounded-r-lg">
-                                <span className="text-sm font-bold tracking-widest uppercase text-blue-200 mb-2 block">{doctor.role}</span>
-                                <h2 className="text-3xl md:text-4xl font-bold mb-6 whitespace-pre-line">{doctor.catchphrase}</h2>
-                                <p className="text-base text-white/90 leading-relaxed mb-6">{doctor.description}</p>
-                                <h3 className="text-xl font-bold text-right">- {doctor.name}</h3>
-                            </div>
-                        </div>
-                    </div>
-                );
-            default:
-                return null;
-        }
+// 쏘카 스타일 의료진 슬라이더 컴포넌트
+function DoctorSlider({ doctors }: { doctors: Doctor[] }) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const nextSlide = () => {
+        setCurrentIndex((prev) => (prev + 1) % doctors.length);
     };
 
+    const prevSlide = () => {
+        setCurrentIndex((prev) => (prev - 1 + doctors.length) % doctors.length);
+    };
+
+    const goToSlide = (index: number) => {
+        setCurrentIndex(index);
+    };
+
+    useEffect(() => {
+        if (isAutoPlaying && doctors.length > 0) {
+            intervalRef.current = setInterval(nextSlide, 5000);
+        }
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, [isAutoPlaying, doctors.length]);
+
+    const handleMouseEnter = () => setIsAutoPlaying(false);
+    const handleMouseLeave = () => setIsAutoPlaying(true);
+
+    if (doctors.length === 0) return null;
+
+    const currentDoctor = doctors[currentIndex];
+    const colors = DOCTOR_COLORS[currentDoctor.bgClass] || DOCTOR_COLORS["primary-bg-1"];
+
     return (
-        <div id={`doctor-${doctor.name.split(' ')[0]}`} className={`relative ${doctor.bgClass} py-32 min-h-[80vh] flex items-center justify-center overflow-hidden w-full text-center mx-auto h-auto`}>
-            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white/20 to-transparent pointer-events-none mix-blend-overlay" />
-            <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-7xl mx-auto px-6 md:px-12 relative z-10"
-            >
-                {renderLayout()}
-            </motion.div>
-            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
-        </div>
-    )
+        <section 
+            className="relative overflow-hidden transition-all duration-700"
+            style={{ background: colors.bg }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
+            {/* 메인 슬라이드 영역 */}
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px] lg:min-h-[700px]">
+                    {/* 좌측: 텍스트 영역 */}
+                    <div className="flex flex-col justify-center px-8 md:px-16 lg:px-20 py-16 lg:py-24 order-2 lg:order-1">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentIndex}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                            >
+                                <motion.span 
+                                    className="inline-block text-sm font-bold tracking-wider mb-4"
+                                    animate={{ color: colors.accent }}
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    {currentDoctor.specialty}
+                                </motion.span>
+                                <motion.h2 
+                                    className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight whitespace-pre-line"
+                                    animate={{ color: colors.text }}
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    {currentDoctor.catchphrase}
+                                </motion.h2>
+                                <motion.p 
+                                    className="text-lg leading-relaxed mb-8 max-w-md"
+                                    animate={{ color: colors.subtext }}
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    {currentDoctor.description}
+                                </motion.p>
+                                <div className="flex items-center gap-4 mb-10">
+                                    <motion.div 
+                                        className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                                        animate={{ 
+                                            background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accent}cc 100%)`
+                                        }}
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        {currentDoctor.name.charAt(0)}
+                                    </motion.div>
+                                    <div>
+                                        <motion.p 
+                                            className="font-bold text-xl"
+                                            animate={{ color: colors.text }}
+                                            transition={{ duration: 0.5 }}
+                                        >
+                                            {currentDoctor.name}
+                                        </motion.p>
+                                        <p className="text-[#8B95A1] text-sm">{currentDoctor.role}</p>
+                                    </div>
+                                </div>
+                                <Link 
+                                    href={`/introduce/doctors#doctor-${currentDoctor.id}`}
+                                    className="inline-flex items-center gap-2 bg-[#191F28] text-white px-8 py-4 rounded-full font-bold hover:bg-[#333D4B] transition-all duration-300 group"
+                                >
+                                    자세히 보기
+                                    <FontAwesomeIcon 
+                                        icon={faChevronRight} 
+                                        className="text-sm group-hover:translate-x-1 transition-transform" 
+                                    />
+                                </Link>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+
+                    {/* 우측: 이미지 영역 */}
+                    <div className="relative order-1 lg:order-2 min-h-[400px] lg:min-h-full">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentIndex}
+                                initial={{ opacity: 0, scale: 1.05 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                                className="absolute inset-0"
+                            >
+                                <Image
+                                    src={currentDoctor.imageSrc}
+                                    alt={currentDoctor.name}
+                                    fill
+                                    className="object-cover object-top"
+                                    priority
+                                />
+                                {/* 그라데이션 오버레이 - 배경색과 어울리게 */}
+                                <motion.div 
+                                    className="absolute inset-0 lg:bg-gradient-to-r from-white/80 via-transparent to-transparent"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 0.7 }}
+                                    transition={{ duration: 0.5 }}
+                                />
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                </div>
+            </div>
+
+            {/* 하단 네비게이션 */}
+            <div className="absolute bottom-8 left-8 md:left-16 lg:left-20 flex items-center gap-6 z-10">
+                {/* 화살표 버튼 */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={prevSlide}
+                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-[#191F28] hover:bg-white hover:shadow-lg transition-all duration-300 cursor-pointer"
+                        aria-label="Previous doctor"
+                    >
+                        <FontAwesomeIcon icon={faChevronLeft} className="text-sm" />
+                    </button>
+                    <button
+                        onClick={nextSlide}
+                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-[#191F28] hover:bg-white hover:shadow-lg transition-all duration-300 cursor-pointer"
+                        aria-label="Next doctor"
+                    >
+                        <FontAwesomeIcon icon={faChevronRight} className="text-sm" />
+                    </button>
+                </div>
+
+                {/* 인디케이터 - 각 의사 색상 반영 */}
+                <div className="flex items-center gap-2">
+                    {doctors.map((doctor, index) => {
+                        const dotColor = DOCTOR_COLORS[doctor.bgClass]?.accent || "#00B8FF";
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => goToSlide(index)}
+                                className="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
+                                style={{
+                                    width: index === currentIndex ? '32px' : '16px',
+                                    backgroundColor: index === currentIndex ? dotColor : '#D1D5DB'
+                                }}
+                                aria-label={`Go to slide ${index + 1}`}
+                            />
+                        );
+                    })}
+                </div>
+
+                {/* 현재 슬라이드 번호 */}
+                <span className="text-sm text-[#8B95A1] font-medium">
+                    <motion.span 
+                        className="font-bold"
+                        animate={{ color: colors.accent }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {String(currentIndex + 1).padStart(2, '0')}
+                    </motion.span>
+                    <span className="mx-1">/</span>
+                    <span>{String(doctors.length).padStart(2, '0')}</span>
+                </span>
+            </div>
+        </section>
+    );
+}
+
+// 의료진 카드 그리드 (쏘카 서비스 카드 스타일)
+function DoctorCardGrid({ doctors }: { doctors: Doctor[] }) {
+    return (
+        <section className="py-24 bg-white">
+            <div className="max-w-7xl mx-auto px-6 md:px-12">
+                <div className="text-center mb-16">
+                    <motion.span
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="inline-block text-[#00B8FF] text-sm font-bold tracking-wider mb-4"
+                    >
+                        OUR SPECIALISTS
+                    </motion.span>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="text-3xl md:text-4xl font-bold text-[#191F28] mb-4"
+                    >
+                        분야별 전문 의료진
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                        className="text-[#4E5968] text-lg"
+                    >
+                        각 분야 최고의 전문의가 최상의 진료를 약속합니다
+                    </motion.p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {doctors.map((doctor, index) => {
+                        const colors = DOCTOR_COLORS[doctor.bgClass] || DOCTOR_COLORS["primary-bg-1"];
+                        return (
+                            <motion.div
+                                key={doctor.id}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.1, duration: 0.5 }}
+                            >
+                                <Link 
+                                    href={`/introduce/doctors#doctor-${doctor.id}`}
+                                    className="group block cursor-pointer"
+                                >
+                                    <div 
+                                        className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-5"
+                                        style={{ background: colors.bg }}
+                                    >
+                                        <Image
+                                            src={doctor.imageSrc}
+                                            alt={doctor.name}
+                                            fill
+                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        {/* 의사별 색상 그라데이션 오버레이 */}
+                                        <div 
+                                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                            style={{ 
+                                                background: `linear-gradient(to top, ${colors.accent}cc 0%, transparent 60%)` 
+                                            }}
+                                        />
+                                        
+                                        {/* 호버 시 나타나는 버튼 */}
+                                        <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
+                                            <span 
+                                                className="block w-full py-3 rounded-xl font-bold text-sm transition-colors text-center"
+                                                style={{ 
+                                                    backgroundColor: 'white',
+                                                    color: colors.accent
+                                                }}
+                                            >
+                                                프로필 보기
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="px-1">
+                                        <span 
+                                            className="text-xs font-bold tracking-wide"
+                                            style={{ color: colors.accent }}
+                                        >
+                                            {doctor.specialty}
+                                        </span>
+                                        <h3 
+                                            className="text-xl font-bold mt-2 mb-1 transition-colors"
+                                            style={{ color: colors.text }}
+                                        >
+                                            {doctor.name} <span className="font-medium text-[#8B95A1]">{doctor.role}</span>
+                                        </h3>
+                                        <p className="text-[#8B95A1] text-sm line-clamp-2 leading-relaxed">
+                                            {doctor.catchphrase.replace(/\n/g, ' ')}
+                                        </p>
+                                    </div>
+                                </Link>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+            </div>
+        </section>
+    );
 }
 
 function SmoothLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
@@ -198,6 +407,23 @@ function SmoothLink({ href, children, className }: { href: string; children: Rea
 }
 
 export default function Home() {
+    const [doctors, setDoctors] = useState<Doctor[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const loadDoctors = async () => {
+            try {
+                const data = await fetchRepresentativeDoctors();
+                setDoctors(data);
+            } catch (error) {
+                console.error('Failed to fetch doctors:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadDoctors();
+    }, []);
+
     return (
         <>
             <ScrollToTop />
@@ -246,24 +472,18 @@ export default function Home() {
                 </div>
             </div>
 
-            <div className="bg-white py-20 px-6">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-8 text-[#191F28]">환영합니다</h2>
-                    <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
-                        저희 병원 홈페이지에 오신 것을 환영합니다. <br />
-                        최상의 의료 서비스로 보답하겠습니다.
-                    </p>
-                </div>
-            </div>
-
-            <div className="flex flex-col justify-center">
-                {DOCTORS.map((doctor, index) => (
-                    <DoctorCard
-                        key={index}
-                        doctor={doctor}
-                    />
-                ))}
-            </div>
+            {/* 의료진 슬라이더 섹션 */}
+            {isLoading ? (
+                <>
+                    <DoctorSliderSkeleton />
+                    <DoctorCardGridSkeleton />
+                </>
+            ) : (
+                <>
+                    <DoctorSlider doctors={doctors} />
+                    <DoctorCardGrid doctors={doctors} />
+                </>
+            )}
 
             {/* Major Services Section */}
             <section className="py-32 bg-white">

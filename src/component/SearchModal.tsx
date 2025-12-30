@@ -14,10 +14,10 @@ interface SearchModalProps {
 // 더미 데이터 (실제로는 API 연동 필요)
 const SEARCH_DATA = [
     { category: "병원소개", title: "병원 소개", path: "/introduce", icon: faBullhorn },
-    { category: "의료진", title: "김명안 대표원장", path: "/introduce/doctors#kim-myeongan", icon: faUserDoctor },
-    { category: "의료진", title: "이시력 원장 (시력교정 센터)", path: "/introduce/doctors#lee-siryeok", icon: faUserDoctor },
-    { category: "의료진", title: "박소아 원장 (소아안과)", path: "/introduce/doctors#park-soa", icon: faUserDoctor },
-    { category: "의료진", title: "최망막 원장 (망막/백내장)", path: "/introduce/doctors#choi-mangmak", icon: faUserDoctor },
+    { category: "의료진", title: "김명안 대표원장", path: "/introduce/doctors#doctor-1", icon: faUserDoctor },
+    { category: "의료진", title: "이시력 원장 (시력교정 센터)", path: "/introduce/doctors#doctor-2", icon: faUserDoctor },
+    { category: "의료진", title: "박소아 원장 (소아안과)", path: "/introduce/doctors#doctor-3", icon: faUserDoctor },
+    { category: "의료진", title: "최망막 원장 (망막/백내장)", path: "/introduce/doctors#doctor-4", icon: faUserDoctor },
     { category: "시설안내", title: "병원 시설 소개", path: "/introduce/facility", icon: faStethoscope },
     { category: "진료안내", title: "스마일 라식/라섹", path: "/services", icon: faStethoscope },
     { category: "진료안내", title: "백내장 수술 클리닉", path: "/services", icon: faStethoscope },
@@ -28,6 +28,17 @@ const SEARCH_DATA = [
     { category: "소식", title: "여름방학 맞이 시력 검진 이벤트", path: "/news", icon: faBullhorn },
     { category: "상담", title: "온라인 상담 신청", path: "/consultation", icon: faStethoscope },
 ];
+
+// 해시 스크롤 유틸 함수
+const scrollToHash = (hash: string, offset: number = 128) => {
+    setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+            const top = element.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top, behavior: 'smooth' });
+        }
+    }, 300);
+};
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -73,7 +84,17 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         setSearchText("");
 
         if (path.includes("#")) {
-            window.location.href = path;
+            const [basePath, hash] = path.split("#");
+            const currentPath = window.location.pathname;
+            
+            if (currentPath === basePath) {
+                // 같은 페이지면 바로 스크롤
+                scrollToHash(hash);
+            } else {
+                // 다른 페이지면 이동 후 스크롤
+                router.push(path);
+                scrollToHash(hash);
+            }
         } else {
             router.push(path);
         }

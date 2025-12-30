@@ -38,20 +38,21 @@ export default function Header() {
                 <div>
                 </div>
                 <div className="flex items-center gap-6">
-                    <div
-                        className="group relative flex items-center cursor-pointer transition-transform ease-in-out duration-300 hover:scale-110"
-                        onClick={() => setIsSearchOpen(true)}
-                    >
-                        {/* Shortcut Badge: scale 없음, 색만 group-hover */}
-                        <div className="hidden md:flex mr-3 px-2 py-1 rounded-md text-[10px] font-bold text-white bg-[#191F28] duration-300 group-hover:bg-[#00B8FF]">
+                    <div className="flex items-center">
+                        {/* Shortcut Badge - 독립 hover */}
+                        <div 
+                            className="hidden md:flex mr-3 px-2 py-1 rounded-md text-[10px] font-bold text-white bg-[#191F28] cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#00B8FF] hover:scale-110"
+                            onClick={() => setIsSearchOpen(true)}
+                        >
                             <span className="opacity-80 mr-1">{shortcutSymbol}</span>
                             <span className="opacity-80 mr-1">+</span>
                             <span className="opacity-80">F</span>
                         </div>
 
-                        {/* Search Icon: 색만 group-hover */}
+                        {/* Search Icon - 독립 hover */}
                         <SearchIcon
-                            className="w-7 h-7 md:w-8 md:h-8 text-[#191F28] transition-colors duration-300 group-hover:text-[#00B8FF]"
+                            className="w-7 h-7 md:w-8 md:h-8 text-[#191F28] cursor-pointer transition-all duration-300 ease-in-out hover:text-[#00B8FF] hover:scale-110"
+                            onClick={() => setIsSearchOpen(true)}
                         />
                     </div>
 
