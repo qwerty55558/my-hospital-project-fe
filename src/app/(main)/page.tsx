@@ -4,10 +4,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowDown, faArrowUp, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fetchRepresentativeDoctors, Doctor } from "@/lib/api";
+import { useRepresentativeDoctors } from "@/hooks/useDoctors";
+import { usePinnedPosts } from "@/hooks/usePosts";
+import { Doctor } from "@/types/doctor";
+import { CATEGORY_LABELS, CATEGORY_STYLES } from "@/types/post";
+import { SERVICES } from "@/data/services";
 import { DoctorSliderSkeleton, DoctorCardGridSkeleton } from "@/component/Skeleton";
+import LocationSection from "@/component/LocationSection";
 
 function ScrollToTop() {
     const [isVisible, setIsVisible] = useState(false);
@@ -47,6 +52,42 @@ function ScrollToTop() {
                 >
                     <FontAwesomeIcon icon={faArrowUp} className="text-xl" />
                 </motion.button>
+            )}
+        </AnimatePresence>
+    );
+}
+
+// 히어로 스크롤 화살표 (스크롤 시 사라짐)
+function HeroScrollArrow() {
+    const [isVisible, setIsVisible] = useState(true);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsVisible(window.pageYOffset < 100);
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    return (
+        <AnimatePresence>
+            {isVisible && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="flex justify-center items-center relative z-50"
+                >
+                    <div className="absolute top-[-3rem]">
+                        <FontAwesomeIcon 
+                            icon={faArrowDown} 
+                            beatFade={true}
+                            className="text-xl sm:text-2xl md:text-3xl xl:text-4xl primary-text-2 drop-shadow-lg" 
+                        />
+                    </div>
+                </motion.div>
             )}
         </AnimatePresence>
     );
@@ -117,7 +158,7 @@ function DoctorSlider({ doctors }: { doctors: Doctor[] }) {
 
     return (
         <section 
-            className="relative overflow-hidden transition-all duration-700"
+            className="relative overflow-hidden"
             style={{ background: colors.bg }}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -179,7 +220,7 @@ function DoctorSlider({ doctors }: { doctors: Doctor[] }) {
                                 </div>
                                 <Link 
                                     href={`/introduce/doctors#doctor-${currentDoctor.id}`}
-                                    className="inline-flex items-center gap-2 bg-[#191F28] text-white px-8 py-4 rounded-full font-bold hover:bg-[#333D4B] transition-all duration-300 group"
+                                    className="inline-flex items-center gap-2 bg-[#191F28] text-white px-8 py-4 rounded-full font-bold hover:bg-[#333D4B] transition-colors duration-200 group"
                                 >
                                     자세히 보기
                                     <FontAwesomeIcon 
@@ -228,14 +269,14 @@ function DoctorSlider({ doctors }: { doctors: Doctor[] }) {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={prevSlide}
-                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-[#191F28] hover:bg-white hover:shadow-lg transition-all duration-300 cursor-pointer"
+                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-[#191F28] hover:bg-white hover:shadow-lg transition-[background,box-shadow] duration-200 cursor-pointer"
                         aria-label="Previous doctor"
                     >
                         <FontAwesomeIcon icon={faChevronLeft} className="text-sm" />
                     </button>
                     <button
                         onClick={nextSlide}
-                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-[#191F28] hover:bg-white hover:shadow-lg transition-all duration-300 cursor-pointer"
+                        className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-[#191F28] hover:bg-white hover:shadow-lg transition-[background,box-shadow] duration-200 cursor-pointer"
                         aria-label="Next doctor"
                     >
                         <FontAwesomeIcon icon={faChevronRight} className="text-sm" />
@@ -250,7 +291,7 @@ function DoctorSlider({ doctors }: { doctors: Doctor[] }) {
                             <button
                                 key={index}
                                 onClick={() => goToSlide(index)}
-                                className="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
+                                className="h-1.5 rounded-full transition-[width,background-color] duration-200 cursor-pointer"
                                 style={{
                                     width: index === currentIndex ? '32px' : '16px',
                                     backgroundColor: index === currentIndex ? dotColor : '#D1D5DB'
@@ -318,39 +359,43 @@ function DoctorCardGrid({ doctors }: { doctors: Doctor[] }) {
                         return (
                             <motion.div
                                 key={doctor.id}
-                                initial={{ opacity: 0, y: 30 }}
+                                initial={{ opacity: 0, y: 40 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ delay: index * 0.1, duration: 0.5 }}
+                                transition={{ 
+                                    delay: index * 0.1, 
+                                    duration: 0.7,
+                                    ease: [0.25, 0.46, 0.45, 0.94]
+                                }}
                             >
                                 <Link 
                                     href={`/introduce/doctors#doctor-${doctor.id}`}
                                     className="group block cursor-pointer"
                                 >
                                     <div 
-                                        className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-5"
+                                        className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-5 transition-shadow duration-500 ease-out group-hover:shadow-2xl"
                                         style={{ background: colors.bg }}
                                     >
                                         <Image
                                             src={doctor.imageSrc}
                                             alt={doctor.name}
                                             fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                                         />
                                         {/* 의사별 색상 그라데이션 오버레이 */}
                                         <div 
-                                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out"
                                             style={{ 
                                                 background: `linear-gradient(to top, ${colors.accent}cc 0%, transparent 60%)` 
                                             }}
                                         />
                                         
                                         {/* 호버 시 나타나는 버튼 */}
-                                        <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
+                                        <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 transition-all duration-500 ease-out">
                                             <span 
-                                                className="block w-full py-3 rounded-xl font-bold text-sm transition-colors text-center"
+                                                className="block w-full py-3 rounded-xl font-bold text-sm text-center shadow-lg backdrop-blur-sm"
                                                 style={{ 
-                                                    backgroundColor: 'white',
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
                                                     color: colors.accent
                                                 }}
                                             >
@@ -406,23 +451,84 @@ function SmoothLink({ href, children, className }: { href: string; children: Rea
     );
 }
 
-export default function Home() {
-    const [doctors, setDoctors] = useState<Doctor[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+// 뉴스 카드 스켈레톤
+function NewsCardsSkeleton() {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white p-8 rounded-2xl shadow-sm animate-pulse">
+                    <div className="w-16 h-6 bg-gray-200 rounded-md mb-4" />
+                    <div className="h-6 bg-gray-200 rounded mb-2" />
+                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-8" />
+                    <div className="w-24 h-4 bg-gray-100 rounded" />
+                </div>
+            ))}
+        </div>
+    );
+}
 
-    useEffect(() => {
-        const loadDoctors = async () => {
-            try {
-                const data = await fetchRepresentativeDoctors();
-                setDoctors(data);
-            } catch (error) {
-                console.error('Failed to fetch doctors:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadDoctors();
-    }, []);
+// Pinned 뉴스 카드 (API 연동)
+function PinnedNewsCards() {
+    const { posts, isLoading } = usePinnedPosts(3);
+
+    if (isLoading) {
+        return <NewsCardsSkeleton />;
+    }
+
+    // 데이터가 없으면 빈 상태 표시
+    if (posts.length === 0) {
+        return (
+            <div className="text-center py-16 text-[#8B95A1]">
+                <p>등록된 소식이 없습니다.</p>
+            </div>
+        );
+    }
+
+    // 날짜 포맷팅 함수
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, '');
+    };
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post, idx) => {
+                const categoryStyle = CATEGORY_STYLES[post.category] || CATEGORY_STYLES['공지'];
+                const categoryLabel = CATEGORY_LABELS[post.category] || post.category;
+                
+                return (
+                    <motion.div
+                        key={post.id}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: idx * 0.05, duration: 0.2 }}
+                        whileHover={{ scale: 1.02, y: -3 }}
+                        className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl cursor-pointer border border-transparent hover:border-[#EEEEEE]"
+                    >
+                        <Link href={`/news/${post.id}`} className="block">
+                            <span className={`inline-block px-3 py-1 ${categoryStyle.bg} ${categoryStyle.text} text-xs font-bold rounded-md mb-4`}>
+                                {categoryLabel}
+                            </span>
+                            <h3 className="text-xl font-bold text-[#191F28] mb-3 line-clamp-2 h-14">
+                                {post.title}
+                            </h3>
+                            {post.summary && (
+                                <p className="text-sm text-[#8B95A1] mb-4 line-clamp-2">
+                                    {post.summary}
+                                </p>
+                            )}
+                            <p className="text-sm text-[#B0B8C1]">{formatDate(post.createdAt)}</p>
+                        </Link>
+                    </motion.div>
+                );
+            })}
+        </div>
+    );
+}
+
+export default function Home() {
+    const { doctors, isLoading } = useRepresentativeDoctors();
 
     return (
         <>
@@ -465,12 +571,7 @@ export default function Home() {
                     </motion.div>
                 </span>
             </div>
-            <div className="flex justify-center items-center relative z-50">
-                <div className="absolute top-[-3rem]">
-                    <FontAwesomeIcon icon={faArrowDown} beatFade={true}
-                        className="text-xl sm:text-2xl md:text-3xl xl:text-4xl primary-text-2 drop-shadow-lg" />
-                </div>
-            </div>
+            <HeroScrollArrow />
 
             {/* 의료진 슬라이더 섹션 */}
             {isLoading ? (
@@ -493,26 +594,27 @@ export default function Home() {
                         <p className="text-lg text-[#4E5968]">분야별 전문의가 제안하는 맞춤형 안과 진료</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {[
-                            { title: "시력교정센터", desc: "스마일라식, 라섹, 안내렌즈삽입술", icon: "👁️", target: "#doctor-이시력" },
-                            { title: "노안·백내장", desc: "다초점 인공수정체 삽입술, 레이저 수술", icon: "👓", target: "#doctor-최망막" },
-                            { title: "망막·드림렌즈", desc: "황반변성, 당뇨망막병증, 영유아 검진", icon: "✨", target: "#doctor-박소아" },
-                        ].map((service, idx) => (
+                        {SERVICES.map((service, idx) => (
                             <motion.div
-                                key={idx}
+                                key={service.id}
                                 initial={{ opacity: 0, y: 15 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.05, duration: 0.5 }}
                                 whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                                className="group p-10 rounded-3xl bg-[#F9FAFB] border border-[#EEEEEE] hover:border-[#00B8FF] hover:bg-white transition-colors duration-300 cursor-pointer shadow-sm hover:shadow-xl"
+                                className="group p-10 rounded-3xl bg-[#F9FAFB] border border-[#EEEEEE] hover:border-[#00B8FF] hover:bg-white transition-colors duration-300 shadow-sm hover:shadow-xl"
                             >
-                                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]">{service.icon}</div>
+                                <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                                    <FontAwesomeIcon icon={service.icon} className="text-2xl text-blue-600" />
+                                </div>
                                 <h3 className="text-2xl font-bold text-[#191F28] mb-3">{service.title}</h3>
-                                <p className="text-[#8B95A1] leading-relaxed">{service.desc}</p>
-                                <SmoothLink href={service.target} className="mt-8 text-[#00B8FF] font-bold inline-flex items-center">
+                                <p className="text-[#8B95A1] leading-relaxed mb-4">{service.description}</p>
+                                <div className="text-sm text-[#4E5968] mb-6">
+                                    {service.items.slice(0, 3).join(' · ')}
+                                </div>
+                                <Link href="/services" className="text-[#00B8FF] font-bold inline-flex items-center">
                                     자세히 보기 <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
-                                </SmoothLink>
+                                </Link>
                             </motion.div>
                         ))}
                     </div>
@@ -527,82 +629,17 @@ export default function Home() {
                             <h2 className="text-4xl font-bold text-[#191F28] mb-4">병원 소식</h2>
                             <p className="text-lg text-[#4E5968]">마이병원의 새로운 소식을 전해드립니다.</p>
                         </div>
-                        <button className="text-[#4E5968] font-medium border-b border-gray-400 hover:text-black">전체보기</button>
+                        <Link href="/news" className="text-[#4E5968] font-medium border-b border-gray-400 hover:text-black transition-colors duration-200">전체보기</Link>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {[
-                            { date: "2025.12.20", title: "12월 성탄절 및 연말 진료 일정 안내", type: "공지" },
-                            { date: "2025.12.15", title: "최첨단 5세대 레이저 장비 '비쥬맥스 800' 도입", type: "뉴스" },
-                            { date: "2025.12.01", title: "겨울방학 맞이 드림렌즈 특별 이벤트", type: "이벤트" },
-                        ].map((post, idx) => (
-                            <motion.div
-                                key={idx}
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: idx * 0.05, duration: 0.2 }}
-                                whileHover={{ scale: 1.02, y: -3 }}
-                                className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-colors duration-300 cursor-pointer border border-transparent hover:border-[#EEEEEE]"
-                            >
-                                <span className="inline-block px-3 py-1 bg-blue-50 text-[#00B8FF] text-xs font-bold rounded-md mb-4">{post.type}</span>
-                                <h3 className="text-xl font-bold text-[#191F28] mb-8 line-clamp-2 h-14">{post.title}</h3>
-                                <p className="text-sm text-[#B0B8C1]">{post.date}</p>
-                            </motion.div>
-                        ))}
-                    </div>
+                    <Suspense fallback={<NewsCardsSkeleton />}>
+                        <PinnedNewsCards />
+                    </Suspense>
                 </div>
             </section>
 
             {/* Location Section */}
-            <section className="py-32 bg-white">
-                <motion.div
-                    initial={{ opacity: 0, y: 25 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="max-w-7xl mx-auto px-6"
-                >
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                        <div>
-                            <h2 className="text-4xl font-bold text-[#191F28] mb-8">오시는 길</h2>
-                            <div className="space-y-6">
-                                <div className="flex items-start">
-                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mr-4 shrink-0">📍</div>
-                                    <div>
-                                        <h4 className="font-bold text-[#191F28] mb-1">위치</h4>
-                                        <p className="text-[#4E5968]">서울특별시 강남구 테헤란로 123, 4층 (강남역 12번 출구)</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start">
-                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mr-4 shrink-0">📞</div>
-                                    <div>
-                                        <h4 className="font-bold text-[#191F28] mb-1">전화</h4>
-                                        <p className="text-[#4E5968]">1588-1234</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start">
-                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mr-4 shrink-0">⏰</div>
-                                    <div>
-                                        <h4 className="font-bold text-[#191F28] mb-1">진료시간</h4>
-                                        <p className="text-[#4E5968]">평일 09:00 ~ 18:00 (점심시간 13:00 ~ 14:00)</p>
-                                        <p className="text-[#4E5968]">토요일 09:00 ~ 13:00 (일요일/공휴일 휴진)</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="mt-12 flex gap-4">
-                                <button className="px-8 py-4 bg-[#191F28] text-white rounded-xl font-bold hover:bg-black transition-colors cursor-pointer">네이버지도</button>
-                                <button className="px-8 py-4 bg-[#FEE500] text-[#191F28] rounded-xl font-bold hover:opacity-90 transition-opacity cursor-pointer">카카오맵</button>
-                            </div>
-                        </div>
-                        <div className="h-[400px] bg-gray-200 rounded-3xl overflow-hidden relative shadow-inner">
-                            {/* Placeholder for Map */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-[#8B95A1] p-10 text-center">
-                                <span className="text-6xl mb-4">🗺️</span>
-                                <p className="font-medium">지도가 표시되는 영역입니다.<br />실제 서비스에서는 지도를 로드합니다.</p>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
+            <section id="location" className="py-32 bg-white scroll-mt-20">
+                <LocationSection className="max-w-7xl mx-auto px-6" />
             </section>
         </>
     );

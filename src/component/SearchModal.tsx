@@ -1,32 +1,46 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faTimes, faChevronRight, faUserDoctor, faStethoscope, faBullhorn } from "@fortawesome/free-solid-svg-icons";
-import Link from "next/link";
+import { 
+    faMagnifyingGlass, 
+    faChevronRight, 
+    faUserDoctor, 
+    faStethoscope, 
+    faNewspaper,
+    faBuilding,
+    faInfoCircle,
+    faComments,
+    IconDefinition
+} from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRepresentativeDoctors } from "@/hooks/useDoctors";
+import { usePosts } from "@/hooks/usePosts";
+import { CATEGORY_CONFIG } from "@/types/post";
 
 interface SearchModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-// 더미 데이터 (실제로는 API 연동 필요)
-const SEARCH_DATA = [
-    { category: "병원소개", title: "병원 소개", path: "/introduce", icon: faBullhorn },
-    { category: "의료진", title: "김명안 대표원장", path: "/introduce/doctors#doctor-1", icon: faUserDoctor },
-    { category: "의료진", title: "이시력 원장 (시력교정 센터)", path: "/introduce/doctors#doctor-2", icon: faUserDoctor },
-    { category: "의료진", title: "박소아 원장 (소아안과)", path: "/introduce/doctors#doctor-3", icon: faUserDoctor },
-    { category: "의료진", title: "최망막 원장 (망막/백내장)", path: "/introduce/doctors#doctor-4", icon: faUserDoctor },
-    { category: "시설안내", title: "병원 시설 소개", path: "/introduce/facility", icon: faStethoscope },
-    { category: "진료안내", title: "스마일 라식/라섹", path: "/services", icon: faStethoscope },
-    { category: "진료안내", title: "백내장 수술 클리닉", path: "/services", icon: faStethoscope },
-    { category: "진료안내", title: "소아 사시/약시 교정", path: "/services", icon: faStethoscope },
-    { category: "진료안내", title: "안구건조증 집중 치료", path: "/services", icon: faStethoscope },
-    { category: "이용안내", title: "예약 및 주차 안내", path: "/information", icon: faBullhorn },
-    { category: "소식", title: "진료 시간 변경 안내", path: "/news", icon: faBullhorn },
-    { category: "소식", title: "여름방학 맞이 시력 검진 이벤트", path: "/news", icon: faBullhorn },
-    { category: "상담", title: "온라인 상담 신청", path: "/consultation", icon: faStethoscope },
+interface SearchItem {
+    category: string;
+    title: string;
+    path: string;
+    icon: IconDefinition;
+    description?: string;
+}
+
+// 고정 메뉴 데이터
+const STATIC_MENU: SearchItem[] = [
+    { category: "메뉴", title: "병원 소개", path: "/introduce", icon: faBuilding },
+    { category: "메뉴", title: "시설 안내", path: "/introduce/facility", icon: faBuilding },
+    { category: "메뉴", title: "의료진 소개", path: "/introduce/doctors", icon: faUserDoctor },
+    { category: "메뉴", title: "진료 안내", path: "/services", icon: faStethoscope },
+    { category: "메뉴", title: "이용 안내", path: "/information", icon: faInfoCircle },
+    { category: "메뉴", title: "병원 소식", path: "/news", icon: faNewspaper },
+    { category: "메뉴", title: "온라인 상담", path: "/consultation", icon: faComments },
 ];
 
 // 해시 스크롤 유틸 함수
@@ -40,32 +54,87 @@ const scrollToHash = (hash: string, offset: number = 128) => {
     }, 300);
 };
 
-import { motion, AnimatePresence } from "framer-motion";
-
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const [searchText, setSearchText] = useState("");
-    const [filteredResults, setFilteredResults] = useState(SEARCH_DATA);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const router = useRouter();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const lastKeyTimestamp = useRef<number>(0);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    // 검색어 필터링 및 인덱스 초기화
-    useEffect(() => {
+    // API 데이터 가져오기
+    const { doctors } = useRepresentativeDoctors();
+    const { posts } = usePosts();
+
+    // 동적 검색 데이터 생성
+    const searchData = useMemo<SearchItem[]>(() => {
+        const items: SearchItem[] = [...STATIC_MENU];
+
+        // 의료진 데이터 추가
+        doctors.forEach((doctor) => {
+            items.push({
+                category: "의료진",
+                title: `${doctor.name} ${doctor.role}`,
+                path: `/introduce/doctors#doctor-${doctor.id}`,
+                icon: faUserDoctor,
+                description: doctor.specialty,
+            });
+        });
+
+        // 게시글 데이터 추가
+        posts
+            .filter((post) => post.isPublished)
+            .forEach((post) => {
+                const categoryInfo = CATEGORY_CONFIG[post.category];
+                items.push({
+                    category: categoryInfo?.label || post.category,
+                    title: post.title,
+                    path: `/news/${post.id}`,
+                    icon: categoryInfo?.icon || faNewspaper,
+                    description: post.summary || undefined,
+                });
+            });
+
+        return items;
+    }, [doctors, posts]);
+
+    // 검색 필터링
+    const filteredResults = useMemo(() => {
         if (searchText.trim() === "") {
-            setFilteredResults(SEARCH_DATA);
-        } else {
-            const lowerText = searchText.toLowerCase();
-            const filtered = SEARCH_DATA.filter(item =>
-                item.title.toLowerCase().includes(lowerText) ||
-                item.category.toLowerCase().includes(lowerText)
-            );
-            setFilteredResults(filtered);
+            // 검색어 없으면 메뉴 + 최근 게시글 일부만
+            return [
+                ...STATIC_MENU,
+                ...searchData
+                    .filter((item) => item.category !== "메뉴")
+                    .slice(0, 5),
+            ];
         }
+
+        const lowerText = searchText.toLowerCase();
+        return searchData.filter(
+            (item) =>
+                item.title.toLowerCase().includes(lowerText) ||
+                item.category.toLowerCase().includes(lowerText) ||
+                item.description?.toLowerCase().includes(lowerText)
+        );
+    }, [searchText, searchData]);
+
+    // 검색어 변경 시 인덱스 초기화
+    useEffect(() => {
         setSelectedIndex(0);
     }, [searchText]);
 
-    // Ensure selected item is visible in scroll container
+    // 모달 열릴 때 포커스
+    useEffect(() => {
+        if (isOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
+        if (!isOpen) {
+            setSearchText("");
+        }
+    }, [isOpen]);
+
+    // 선택된 아이템 스크롤
     useEffect(() => {
         if (scrollContainerRef.current) {
             const container = scrollContainerRef.current;
@@ -88,10 +157,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             const currentPath = window.location.pathname;
             
             if (currentPath === basePath) {
-                // 같은 페이지면 바로 스크롤
                 scrollToHash(hash);
             } else {
-                // 다른 페이지면 이동 후 스크롤
                 router.push(path);
                 scrollToHash(hash);
             }
@@ -108,8 +175,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             const now = Date.now();
             const isArrowKey = e.key === "ArrowDown" || e.key === "ArrowUp";
 
-            // Throttle arrow keys (0.2s)
-            if (isArrowKey && now - lastKeyTimestamp.current < 200) {
+            if (isArrowKey && now - lastKeyTimestamp.current < 100) {
                 e.preventDefault();
                 return;
             }
@@ -140,6 +206,13 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         };
     }, [isOpen, onClose, filteredResults, selectedIndex, handleNavigate]);
 
+    // easeInOut 트랜지션
+    const easeTransition = {
+        type: "tween" as const,
+        ease: "easeInOut" as const,
+        duration: 0.2,
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -149,6 +222,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        transition={easeTransition}
                         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         onClick={onClose}
                     />
@@ -161,21 +235,20 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                         className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden"
                     >
-
                         {/* Search Input Header */}
                         <div className="flex items-center border-b border-gray-100 p-4">
                             <FontAwesomeIcon icon={faMagnifyingGlass} className="text-gray-400 text-xl ml-2" />
                             <input
+                                ref={inputRef}
                                 type="text"
-                                placeholder="무엇을 찾고 계신가요?"
+                                placeholder="의료진, 게시글, 메뉴 검색..."
                                 className="w-full text-xl p-3 pl-4 outline-none text-[#191F28] placeholder-gray-300 font-medium bg-transparent"
-                                autoFocus
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
                             />
                             <button
                                 onClick={onClose}
-                                className="p-2 text-gray-400 hover:text-[#00B8FF] transition-colors bg-gray-50 rounded-md text-sm font-semibold px-3"
+                                className="p-2 text-gray-400 hover:text-[#00B8FF] transition-colors duration-200 bg-gray-50 rounded-md text-sm font-semibold px-3"
                             >
                                 ESC
                             </button>
@@ -189,12 +262,12 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             {filteredResults.length > 0 ? (
                                 <>
                                     <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        {searchText ? "검색 결과" : "추천 검색어"}
+                                        {searchText ? `"${searchText}" 검색 결과 (${filteredResults.length})` : "바로가기"}
                                     </div>
                                     <div className="flex flex-col space-y-1 relative">
                                         {filteredResults.map((item, index) => (
                                             <motion.div
-                                                key={index}
+                                                key={`${item.path}-${index}`}
                                                 layout
                                                 data-index={index}
                                                 onClick={() => handleNavigate(item.path)}
@@ -206,33 +279,38 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                     <motion.div
                                                         layoutId="search-highlight"
                                                         className="absolute inset-0 bg-blue-50 rounded-lg -z-10"
-                                                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                                                        transition={{ type: "spring", bounce: 0.15, duration: 0.3 }}
                                                     />
                                                 )}
 
-                                                <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-4 min-w-0 flex-1">
                                                     <motion.div
                                                         animate={{
                                                             backgroundColor: selectedIndex === index ? "#FFFFFF" : "#F3F4F6",
                                                             color: selectedIndex === index ? "#00B8FF" : "#9CA3AF"
                                                         }}
-                                                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                                                        transition={easeTransition}
+                                                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
                                                     >
-                                                        <FontAwesomeIcon icon={item.icon} />
+                                                        <FontAwesomeIcon icon={item.icon} className="text-sm" />
                                                     </motion.div>
-                                                    <div>
+                                                    <div className="min-w-0 flex-1">
                                                         <motion.div
                                                             animate={{ color: selectedIndex === index ? "#00B8FF" : "#191F28" }}
-                                                            className="font-semibold"
+                                                            transition={easeTransition}
+                                                            className="font-semibold truncate"
                                                         >
                                                             {item.title}
                                                         </motion.div>
-                                                        <motion.div
-                                                            animate={{ color: selectedIndex === index ? "#3b82f6" : "#8B95A1" }}
-                                                            className="text-xs"
-                                                        >
-                                                            {item.category}
-                                                        </motion.div>
+                                                        <div className="flex items-center gap-2 text-xs text-[#8B95A1]">
+                                                            <span>{item.category}</span>
+                                                            {item.description && (
+                                                                <>
+                                                                    <span>·</span>
+                                                                    <span className="truncate">{item.description}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <motion.div
@@ -240,6 +318,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                         color: selectedIndex === index ? "#00B8FF" : "#D1D5DB",
                                                         x: selectedIndex === index ? 4 : 0
                                                     }}
+                                                    transition={easeTransition}
+                                                    className="shrink-0 ml-2"
                                                 >
                                                     <FontAwesomeIcon icon={faChevronRight} className="text-sm" />
                                                 </motion.div>
@@ -273,4 +353,3 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </AnimatePresence>
     );
 }
-

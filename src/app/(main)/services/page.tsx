@@ -2,38 +2,11 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-    faEye, 
-    faMicroscope, 
-    faStethoscope, 
-    faChevronRight,
     faHandHoldingHeart,
     faLaptopMedical
 } from '@fortawesome/free-solid-svg-icons';
 import { motion } from 'framer-motion';
-
-const services = [
-    {
-        id: 'general',
-        title: '일반 안과 질환',
-        icon: faStethoscope,
-        description: '다양한 안질환에 대한 정밀 검사와 맞춤형 치료를 제공합니다.',
-        items: ['노안/백내장', '녹내장', '망막/황반변성', '안구건조증', '비문증']
-    },
-    {
-        id: 'vision',
-        title: '시력교정 센터',
-        icon: faEye,
-        description: '개개인의 눈 상태에 가장 적합한 최적의 시력교정술을 제안합니다.',
-        items: ['라식/라섹', '안내렌즈삽입술', '스마일라식', '노안 교정술']
-    },
-    {
-        id: 'special',
-        title: '특수 클리닉',
-        icon: faMicroscope,
-        description: '특화된 분야의 전문적인 진료 시스템을 갖추고 있습니다.',
-        items: ['드림렌즈', '소아안과/사시', '원추각막', '콘택트렌즈']
-    }
-];
+import { SERVICES } from '@/data/services';
 
 export default function Page() {
     return (
@@ -68,13 +41,19 @@ export default function Page() {
 
             {/* Service Categories Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-                {services.map((service, index) => (
+                {SERVICES.map((service, index) => (
                     <motion.div
                         key={service.id}
                         initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 + 0.3 }}
-                        className="bg-white border border-gray-100 p-8 rounded-3xl shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all hover:-translate-y-1"
+                        animate={{ opacity: 1, y: 0, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
+                        whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.15)" }}
+                        transition={{ 
+                            delay: index * 0.1 + 0.3, 
+                            duration: 0.4,
+                            y: { type: "spring", stiffness: 200, damping: 25 },
+                            boxShadow: { duration: 0.3 }
+                        }}
+                        className="bg-white border border-gray-100 p-8 rounded-3xl"
                     >
                         <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
                             <FontAwesomeIcon icon={service.icon} className="text-2xl text-blue-600" />
@@ -85,10 +64,9 @@ export default function Page() {
                         </p>
                         <ul className="space-y-3">
                             {service.items.map((item, i) => (
-                                <li key={i} className="flex items-center text-gray-700 font-medium group cursor-pointer">
-                                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3 group-hover:scale-125 transition-transform" />
+                                <li key={i} className="flex items-center text-gray-700 font-medium group">
+                                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3" />
                                     {item}
-                                    <FontAwesomeIcon icon={faChevronRight} className="ml-auto text-[10px] text-gray-300 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0" />
                                 </li>
                             ))}
                         </ul>
@@ -98,9 +76,10 @@ export default function Page() {
 
             {/* Philosophy Section */}
             <motion.div 
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6 }}
                 className="bg-[#191F28] rounded-[40px] p-10 md:p-16 text-white relative overflow-hidden"
             >
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">
@@ -130,18 +109,6 @@ export default function Page() {
                 </div>
             </motion.div>
 
-            {/* Footer Contact CTA */}
-            <div className="mt-20 text-center">
-                <p className="text-gray-500 mb-6 font-medium">진료 예약 및 문의사항이 있으신가요?</p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-colors">
-                        온라인 상담하기
-                    </button>
-                    <button className="w-full sm:w-auto px-8 py-4 border border-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-50 transition-colors">
-                        오시는 길 안내
-                    </button>
-                </div>
-            </div>
         </div>
     );
 }

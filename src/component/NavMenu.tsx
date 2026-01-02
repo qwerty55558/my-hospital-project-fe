@@ -65,7 +65,7 @@ export default function NavMenu({ isOpen, onClose }: NavMenuProps) {
                                     <Link
                                         href={item.path}
                                         onClick={onClose}
-                                        className="group relative inline-block text-2xl md:text-3xl font-bold text-[#191F28] transition-all duration-300 hover:text-[#00B8FF]"
+                                        className="group relative inline-block text-2xl md:text-3xl font-bold text-[#191F28] transition-colors duration-200 hover:text-[#00B8FF]"
                                     >
                                         <span className="relative z-10">{item.name}</span>
                                         <span className="absolute left-1/2 bottom-[-4px] w-full h-1 bg-[#00B8FF] transition-transform duration-300 origin-center scale-x-0 -translate-x-1/2 group-hover:scale-x-100"></span>

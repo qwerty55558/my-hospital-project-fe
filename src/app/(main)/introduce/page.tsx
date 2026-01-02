@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function IntroducePage() {
     return (
         <div className="bg-white min-h-screen">
@@ -119,12 +121,18 @@ export default function IntroducePage() {
             <section className="py-32 px-6 bg-[#191F28] text-center">
                 <h2 className="text-white text-3xl md:text-4xl font-bold mb-10">당신의 건강한 눈, 마이병원이 함께합니다</h2>
                 <div className="flex justify-center gap-4">
-                    <button className="bg-[#00B8FF] text-white px-10 py-4 rounded-full font-bold hover:bg-[#0096D1] transition-all">
+                    <Link 
+                        href="/consultation"
+                        className="bg-[#00B8FF] text-white px-10 py-4 rounded-full font-bold hover:bg-[#0096D1] transition-colors duration-200"
+                    >
                         온라인 상담하기
-                    </button>
-                    <button className="border border-white/30 text-white px-10 py-4 rounded-full font-bold hover:bg-white/10 transition-all">
+                    </Link>
+                    <Link 
+                        href="/#location"
+                        className="border border-white/30 text-white px-10 py-4 rounded-full font-bold hover:bg-white/10 transition-colors duration-200"
+                    >
                         오시는 길
-                    </button>
+                    </Link>
                 </div>
             </section>
         </div>

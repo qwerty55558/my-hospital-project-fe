@@ -1,9 +1,55 @@
+"use client";
+
+import { motion } from "framer-motion";
+import LocationSection from "@/component/LocationSection";
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.15,
+        },
+    },
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 25 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+        },
+    },
+};
+
 export default function Page() {
     return (
-        <div className="pt-48 pb-20 px-6 max-w-4xl mx-auto min-h-screen">
-            <h1 className="text-4xl md:text-5xl font-bold mb-12 text-[#191F28]">이용 안내</h1>
-            <div className="space-y-12">
-                <section className="bg-[#F5F7F9] p-8 rounded-2xl">
+        <motion.div 
+            className="pt-48 pb-20 px-6 max-w-6xl mx-auto min-h-screen"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.h1 
+                variants={itemVariants}
+                className="text-4xl md:text-5xl font-bold mb-12 text-[#191F28]"
+            >
+                이용 안내
+            </motion.h1>
+            <motion.div className="space-y-16" variants={containerVariants}>
+                {/* 오시는 길 섹션 */}
+                <motion.section variants={itemVariants}>
+                    <LocationSection showTitle={true} />
+                </motion.section>
+
+                {/* 진료 시간 섹션 */}
+                <motion.section 
+                    variants={itemVariants}
+                    className="bg-[#F5F7F9] p-8 rounded-2xl"
+                >
                     <h2 className="text-2xl font-bold mb-6 text-[#191F28]">진료 시간</h2>
                     <ul className="space-y-4 text-gray-700">
                         <li className="flex justify-between border-b border-gray-200 pb-2">
@@ -23,9 +69,10 @@ export default function Page() {
                             <span>휴진</span>
                         </li>
                     </ul>
-                </section>
+                </motion.section>
 
-                <section>
+                {/* 예약 안내 섹션 */}
+                <motion.section variants={itemVariants}>
                     <h2 className="text-2xl font-bold mb-6 text-[#191F28]">예약 안내</h2>
                     <div className="bg-white border border-gray-100 p-6 rounded-xl shadow-sm">
                         <p className="text-gray-600 mb-4 leading-relaxed">
@@ -39,9 +86,10 @@ export default function Page() {
                             </div>
                         </div>
                     </div>
-                </section>
+                </motion.section>
 
-                <section>
+                {/* 주차 안내 섹션 */}
+                <motion.section variants={itemVariants}>
                     <h2 className="text-2xl font-bold mb-6 text-[#191F28]">주차 안내</h2>
                     <div className="bg-white border border-gray-100 p-6 rounded-xl shadow-sm">
                         <ul className="space-y-3 text-gray-600">
@@ -59,8 +107,8 @@ export default function Page() {
                             </li>
                         </ul>
                     </div>
-                </section>
-            </div>
-        </div>
+                </motion.section>
+            </motion.div>
+        </motion.div>
     );
 }

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuoteLeft, faChevronDown, faGraduationCap, faBriefcase, faAward } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRepresentativeDoctors, useDoctorDetail } from "@/lib/api";
+import { useRepresentativeDoctors, useDoctorDetail } from "@/hooks/useDoctors";
 import { DoctorListSkeleton } from "@/component/Skeleton";
 
 function DoctorImage({ src, alt, isActive }: { src: string; alt: string; isActive: boolean }) {
@@ -57,7 +57,7 @@ function DoctorDetailAccordion({ doctorId, isOpen, onToggle }: { doctorId: numbe
         <div className="mt-6">
             <button
                 onClick={onToggle}
-                className="w-full bg-white text-[#191F28] py-4 rounded-xl font-bold border border-[#F2F4F6] hover:bg-gray-50 transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full bg-white text-[#191F28] py-4 rounded-xl font-bold border border-[#F2F4F6] hover:bg-gray-50 transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2"
             >
                 상세 약력보기
                 <motion.span
@@ -248,7 +248,7 @@ export default function DoctorsPage() {
                                     <div className="grid grid-cols-1 gap-4">
                                         <Link 
                                             href={`/consultation?doctor=${encodeURIComponent(doctor.name)}&specialty=${encodeURIComponent(doctor.specialty)}`}
-                                            className="bg-[#191F28] text-white py-4 rounded-xl font-bold hover:bg-[#333D4B] transition-all cursor-pointer text-center block"
+                                            className="bg-[#191F28] text-white py-4 rounded-xl font-bold hover:bg-[#333D4B] transition-colors duration-200 cursor-pointer text-center block"
                                         >
                                             진료 예약하기
                                         </Link>

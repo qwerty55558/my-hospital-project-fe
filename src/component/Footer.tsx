@@ -44,14 +44,24 @@ export default function Footer() {
                         ))}
                     </div>
                     <div className="flex space-x-3">
-                        <div className="bg-black text-white px-4 py-2 rounded-lg flex flex-col items-start justify-center cursor-pointer hover:bg-gray-800 transition-all min-w-[140px]">
+                        <a
+                            href="https://www.apple.com/app-store/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-black text-white px-4 py-2 rounded-lg flex flex-col items-start justify-center cursor-pointer hover:bg-gray-800 transition-colors duration-200 min-w-[140px]"
+                        >
                             <span className="text-[10px] leading-none opacity-70 mb-1">Download on the</span>
                             <span className="text-sm font-bold leading-none">App Store</span>
-                        </div>
-                        <div className="bg-black text-white px-4 py-2 rounded-lg flex flex-col items-start justify-center cursor-pointer hover:bg-gray-800 transition-all min-w-[140px]">
+                        </a>
+                        <a
+                            href="https://play.google.com/store"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-black text-white px-4 py-2 rounded-lg flex flex-col items-start justify-center cursor-pointer hover:bg-gray-800 transition-colors duration-200 min-w-[140px]"
+                        >
                             <span className="text-[10px] leading-none opacity-70 mb-1">Get it on</span>
                             <span className="text-sm font-bold leading-none">Google Play</span>
-                        </div>
+                        </a>
                     </div>
                 </div>
 
