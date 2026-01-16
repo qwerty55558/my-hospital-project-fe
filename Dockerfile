@@ -16,7 +16,7 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_API_URL=https://myhospitalproject.o-r.kr/api
+ENV NEXT_PUBLIC_API_URL=https://myhospitalproject.o-r.kr/api_server
 
 RUN npm run build
 

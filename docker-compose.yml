@@ -3,7 +3,15 @@ services:
     image: ghcr.io/qwerty55558/my-hospital-project-fe:latest
     container_name: mhp-fe
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       - NODE_ENV=production
+    networks:
+      be_hospital-network:
+        aliases:
+          - app
+    ports:
+      - "3000:3000"
+
+networks:
+  be_hospital-network:
+    external: true
