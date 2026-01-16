@@ -1,6 +1,6 @@
 FROM node:22-alpine AS base
 
-LABEL org.opencontainers.image.source=https://github.com/qwerty55558/my-hospital-project
+LABEL org.opencontainers.image.source=https://github.com/qwerty55558/my-hospital-project-fe
 
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
