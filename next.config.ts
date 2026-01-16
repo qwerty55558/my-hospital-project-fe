@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  output: 'standalone',
   reactCompiler: true,
   devIndicators: false,
   reactStrictMode: false,  // Strict Mode 비활성화 (개발 중 깜빡임 테스트)
