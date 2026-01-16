@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: ghcr.io/qwerty55558/my-hospital-project-fe:latest
+    image: ghcr.io/qwerty55558/my-hospital-project:latest
     container_name: mhp-fe
     restart: unless-stopped
     ports:
