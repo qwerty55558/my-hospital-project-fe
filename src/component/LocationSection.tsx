@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 const KAKAO_MAP_HTML = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html><head><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>html,body{margin:0;padding:0;width:100%;height:100%}.root_daum_roughmap{width:100%!important;height:100%!important}</style>
 </head><body>
 <div id="daumRoughmapContainer1770338912086" class="root_daum_roughmap root_daum_roughmap_landing"></div>
