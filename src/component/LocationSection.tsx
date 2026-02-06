@@ -2,12 +2,24 @@
 
 import { motion } from "framer-motion";
 
+const KAKAO_MAP_HTML = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;padding:0;width:100%;height:100%}.root_daum_roughmap{width:100%!important;height:100%!important}</style>
+</head><body>
+<div id="daumRoughmapContainer1770338912086" class="root_daum_roughmap root_daum_roughmap_landing"></div>
+<script charset="UTF-8" src="https://ssl.daumcdn.net/dmaps/map_js_init/roughmapLoader.js"></script>
+<script charset="UTF-8">
+new daum.roughmap.Lander({"timestamp":"1770338912086","key":"26g2wrbpcza9","mapWidth":"640","mapHeight":"360"}).render();
+</script>
+</body></html>`;
+
 interface LocationSectionProps {
     showTitle?: boolean;
     className?: string;
 }
 
 export default function LocationSection({ showTitle = true, className = "" }: LocationSectionProps) {
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 25 }}
@@ -46,7 +58,7 @@ export default function LocationSection({ showTitle = true, className = "" }: Lo
                         </div>
                     </div>
                     <div className="mt-12 flex gap-4">
-                        <a 
+                        <a
                             href="https://map.naver.com/p/search/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C%20%EA%B0%95%EB%82%A8%EA%B5%AC%20%ED%85%8C%ED%97%A4%EB%9E%80%EB%A1%9C%20123/address/14135654.4738988,4509377.6498498,%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C%20%EA%B0%95%EB%82%A8%EA%B5%AC%20%ED%85%8C%ED%97%A4%EB%9E%80%EB%A1%9C%20123,new?c=15.00,0,0,0,dh&isCorrectAnswer=true"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -54,7 +66,7 @@ export default function LocationSection({ showTitle = true, className = "" }: Lo
                         >
                             네이버지도
                         </a>
-                        <a 
+                        <a
                             href="https://map.kakao.com/link/map/마이병원,37.4979,127.0276"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -66,15 +78,13 @@ export default function LocationSection({ showTitle = true, className = "" }: Lo
                 </div>
                 <div className="h-[400px] bg-gray-200 rounded-3xl overflow-hidden relative shadow-inner">
                     <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3165.354896498767!2d127.02508731531!3d37.49794797981!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357ca159000000%3A0x0!2z7ISc7Jq47Yq567OE7IucIOqwleuCqOq1rCDthYztl6TrnoDroZwgMTIz!5e0!3m2!1sko!2skr!4v1"
+                        srcDoc={KAKAO_MAP_HTML}
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
-                        allowFullScreen
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
                         title="마이병원 위치"
                         className="absolute inset-0"
+                        loading="lazy"
                     />
                 </div>
             </div>
